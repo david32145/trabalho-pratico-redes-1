@@ -1,4 +1,4 @@
-DEVICES:x,y,z,a,b,c,d
-LINKS:(x,y,2),(y,z,1),(x,z,7),(a,d,8)
-ROUTES:(x,z),(z,y),(a,x)
+DEVICES:x,y,z
+LINKS:(x,y,2),(y,z,1),(x,z,7)
+ROUTES:(x,z),(z,y)
 
