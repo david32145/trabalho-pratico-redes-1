@@ -16,4 +16,9 @@ public class Route {
 	public Device getTarget() {
 		return target;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("(%s,%s)", source, target);
+	}
 }

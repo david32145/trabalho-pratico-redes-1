@@ -17,6 +17,10 @@ public class Redirect {
 		return String.format("%s -> %s: %s", source, target, link);
 	}
 	
+	public boolean isSourceByRedirect(Device device) {
+		return !this.source.equals(device);
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(obj == null) {
@@ -28,5 +32,17 @@ public class Redirect {
 		
 		Redirect other = (Redirect) obj;
 		return this.source.equals(other.source) && this.target.equals(other.target);
+	}
+	
+	public Device getTarget() {
+		return target;
+	}
+	
+	public Device getSource() {
+		return source;
+	}
+	
+	public Link getLink() {
+		return link;
 	}
 }

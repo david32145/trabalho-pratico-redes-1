@@ -8,13 +8,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import br.ufc.crateus.redes.dijkstra.AlgorithmDijkstra;
 import br.ufc.crateus.redes.dijkstra.NetworkRouter;
 import br.ufc.crateus.redes.models.Device;
 import br.ufc.crateus.redes.models.Link;
 import br.ufc.crateus.redes.models.Redirect;
+import br.ufc.crateus.redes.models.Route;
 import br.ufc.crateus.redes.models.RoutingTableDetails;
 import br.ufc.crateus.redes.reader.NetworkFileReader;
 
@@ -30,18 +34,31 @@ public class App {
 //        System.out.println();
 
 		List<Link> links = networkFileReader.getLinks();
+	
 		
 		NetworkRouter networkRouter = new NetworkRouter(devices.toArray(new Device[devices.size()]), links.toArray(new Link[links.size()]));
 		networkRouter.buildRoutes();
 		
-		devices.forEach(d -> System.out.printf("%s:\t|", d));
-		System.out.println();
-		List<Redirect> redirects = networkRouter.getRedirects();
-		redirects.forEach(System.out::println);
-		for (int i = 0; i < devices.size(); i++) {
-//			redirects.f
-			
+		List<List<Redirect>> reList = networkRouter.getRedirects();
+		
+		for (int i = 0; i < reList.size(); i++) {
+			System.out.println("Interaction: " + i);
+			devices.forEach(d -> System.out.printf("%s:\t\t", d));
+			System.out.println();
+			List<Redirect> list = reList.get(i);
+			for(int l = 0; l < list.size()/devices.size(); l++) {
+				for(int k = 0; k < devices.size(); k++) {
+					final int index = k;
+					Redirect red = list.stream()
+								.filter(r -> r.isSourceByRedirect(devices.get(index)))
+								.collect(Collectors.toList())
+								.get(l);
+					System.out.printf("%s,(%s, %s),%.0f\t", red.getSource(), red.getLink().getSource(), red.getLink().getTarget(), red.getLink().getWeight());
+				}
+				System.out.println();
+			}
 		}
+		
 //        System.out.println();
 
 //        networkFileReader.getRoutes()

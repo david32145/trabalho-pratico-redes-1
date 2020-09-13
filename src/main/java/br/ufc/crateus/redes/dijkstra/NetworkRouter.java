@@ -1,11 +1,16 @@
 package br.ufc.crateus.redes.dijkstra;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 import br.ufc.crateus.redes.models.Device;
 import br.ufc.crateus.redes.models.Link;
 import br.ufc.crateus.redes.models.Redirect;
+import br.ufc.crateus.redes.models.Route;
 
 public class NetworkRouter {
 	private Device[] devices;
@@ -15,7 +20,7 @@ public class NetworkRouter {
 	private double[] distanceTo;
 	private int[] parentIndex;
 	
-	private List<Redirect> redirects;
+	private List<List<Redirect>> redirects;
 	
 	private int currentDeviceIndex;
 	
@@ -30,7 +35,17 @@ public class NetworkRouter {
 			this.init();
 			this.distanceTo[i] = 0;
 			this.currentDeviceIndex = i;
-			runInteraction(0);			
+			runInteraction(0);
+			nomarlizeRedirecs();
+		}
+		System.out.println();
+	}
+	
+	private void nomarlizeRedirecs() {
+		for(int i = 1; i < this.redirects.size(); i++) {
+			List<Redirect> previos = this.redirects.get(i-1);
+			List<Redirect> current = this.redirects.get(i);
+			previos.forEach(r -> this.add(current, r, true));
 		}
 	}
 	
@@ -45,12 +60,25 @@ public class NetworkRouter {
 		}
 	}
 	
-	private void runInteraction(int interaction) {
+	private List<Redirect> getRedirectsFromInteraction(int interaction) {
+		if(interaction > this.redirects.size() - 1) {
+			if(interaction == 0) {
+				this.redirects.add(new ArrayList<Redirect>());
+			} else {
+				List<Redirect> oldsRedirects = this.redirects.get(interaction-1);
+				this.redirects.add(this.cloneRedirectSet(oldsRedirects));
+			}
+		}
+		return this.redirects.get(interaction);
+	}
+	
+	private int runInteraction(int interaction) {
 		Integer index = this.findMinorDevice();
 		if(index == null) {
-			return;
+			return interaction;
 		}
 		this.devicesClosed[index] = true;
+		List<Redirect> redirectSet = this.getRedirectsFromInteraction(interaction);
 		Device device = this.devices[index];
 		double deviceDistance = this.distanceTo[index];
 		List<Link> adjacentsLinks = this.findAdjacentsLinks(device);
@@ -62,10 +90,20 @@ public class NetworkRouter {
 				this.distanceTo[adjacentDeviceIndex] = deviceDistance + link.getWeight();
 				this.parentIndex[adjacentDeviceIndex] = index;
 				Redirect redirect = new Redirect(adjacentDevice, this.devices[currentDeviceIndex], new Link(adjacentDevice, device, this.distanceTo[adjacentDeviceIndex]));
-				this.redirects.add(redirect);
+				this.add(redirectSet, redirect, false);
 			}
 		}
-		runInteraction(interaction + 1);
+		return runInteraction(interaction + 1);
+	}
+	
+	private void add(List<Redirect> red, Redirect r, boolean noUpdated) {
+		if(!red.contains(r)) {
+			red.add(r);
+		}else {
+			if(!noUpdated) {
+				red.set(red.indexOf(r), r);
+			}
+		}
 	}
 	
 	private Integer findMinorDevice() {
@@ -102,7 +140,38 @@ public class NetworkRouter {
 		return -1;
 	}
 	
-	public List<Redirect> getRedirects() {
+	public Queue<Route> getRoutes(Route route) {
+		List<Redirect> redirects = this.redirects.get(this.redirects.size()-1);
+		Queue<Route> queue = new LinkedList<Route>();
+		Device currentDevice = route.getSource();
+		while(true) {
+			final Device c = currentDevice; 
+			Redirect redirect = redirects
+				.stream()
+				.filter(r -> c.equals(r.getSource()) && r.getTarget().equals(route.getTarget()))
+				.findFirst()
+				.orElse(null);
+			if(redirect == null) {
+				return null;
+			}
+			Device target = redirect.getLink().getOther(currentDevice);
+			queue.add(new Route(currentDevice, target));
+			if(target.equals(route.getTarget())) {
+				return queue;
+			}
+			currentDevice = target;
+		}
+	}
+	
+	private List<Redirect> cloneRedirectSet(List<Redirect> redirects) {
+		List<Redirect> newRedirect = new ArrayList<Redirect>();
+		for(Redirect r : redirects) {
+			newRedirect.add(r);
+		}
+		return newRedirect;
+	}
+	
+	public List<List<Redirect>> getRedirects() {
 		return redirects;
 	}
 }
