@@ -11,14 +11,13 @@ public class Redirect {
 		this.link = link;
 	}
 	
-	
 	@Override
 	public String toString() {
 		return String.format("%s -> %s: %s", source, target, link);
 	}
 	
 	public boolean isSourceByRedirect(Device device) {
-		return !this.source.equals(device);
+		return this.source.equals(device);
 	}
 	
 	@Override

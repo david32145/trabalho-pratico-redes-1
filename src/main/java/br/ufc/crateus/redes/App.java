@@ -43,11 +43,15 @@ public class App {
 			for(int l = 0; l < list.size()/devices.size(); l++) {
 				for(int k = 0; k < devices.size(); k++) {
 					final int index = k;
-					Redirect red = list.stream()
+					List<Redirect> r1 = list.stream()
 								.filter(r -> r.isSourceByRedirect(devices.get(index)))
-								.collect(Collectors.toList())
-								.get(l);
-					System.out.printf("%s,(%s, %s),%.0f\t", red.getSource(), red.getLink().getSource(), red.getLink().getTarget(), red.getLink().getWeight());
+								.collect(Collectors.toList());
+					if(r1.size() - 1 < l) {
+						System.out.printf("\t\t");
+						continue;
+					}
+					Redirect red = r1.get(l);
+					System.out.printf("%s,(%s, %s),%.0f\t", red.getTarget(), red.getLink().getSource(), red.getLink().getTarget(), red.getLink().getWeight());
 				}
 				System.out.println();
 			}
@@ -59,16 +63,18 @@ public class App {
 		List<Route> routes = networkFileReader.getRoutes();
 		for (Route route : routes) {
 			Queue<Route> queueRoutes = networkRouter.getRoutes(route);
-			System.out.println("Route: " + route);
+			System.out.print("ROTA " + route + ": ");
 			if(queueRoutes == null) {
 				System.out.println("Não foi possível achar a rota");
 				continue;
 			}
 			
+			StringBuilder sb = new StringBuilder();
 			for(Route r : networkRouter.getRoutes(route)) {
-				System.out.println(r);
+				sb.append(r.toString()).append(",");
 			}
-			System.out.println();
+			sb.deleteCharAt(sb.length() - 1);
+			System.out.println(sb.toString());
 		}
 	}
 }
