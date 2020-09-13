@@ -1,4 +1,4 @@
-package br.ufc.crateus.redes.dijkstra;
+package network;
 
 import java.util.ArrayList;
 import java.util.HashSet;
