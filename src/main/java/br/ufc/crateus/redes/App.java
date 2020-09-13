@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.stream.Collectors;
@@ -54,17 +55,20 @@ public class App {
 		
 		System.out.println();
 		
-		String sourceLabel = "z";
-		String targetLabel = "x";
-		Route route = new Route(new Device(sourceLabel), new Device(targetLabel));
-		System.out.println("Route: " + route);
-		Queue<Route> routes = networkRouter.getRoutes(route);
-		if(routes == null) {
-			System.out.println("Não foi possível achar a rota");
-			return;
-		}
-		for(Route r : networkRouter.getRoutes(route)) {
-			System.out.println(r);
+		
+		List<Route> routes = networkFileReader.getRoutes();
+		for (Route route : routes) {
+			Queue<Route> queueRoutes = networkRouter.getRoutes(route);
+			System.out.println("Route: " + route);
+			if(queueRoutes == null) {
+				System.out.println("Não foi possível achar a rota");
+				continue;
+			}
+			
+			for(Route r : networkRouter.getRoutes(route)) {
+				System.out.println(r);
+			}
+			System.out.println();
 		}
 	}
 }
