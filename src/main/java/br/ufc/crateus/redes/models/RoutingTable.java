@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class RoutingTable {
-	private Map<Device, List<RoutingTableDetails>> routingMap;
+	private Map<Device, Set<RoutingTableDetails>> routingMap;
 	private int size = 0;
 	
 	public RoutingTable() {
@@ -14,17 +16,25 @@ public class RoutingTable {
 	}
 	
 	public void put(Device device, RoutingTableDetails details) {
-		List<RoutingTableDetails> detailList = this.routingMap.getOrDefault(device, new ArrayList<RoutingTableDetails>());
+		Set<RoutingTableDetails> detailList = this.routingMap.getOrDefault(device, new TreeSet<RoutingTableDetails>());
 		detailList.add(details);
 		this.size = detailList.size();
 		this.routingMap.put(device, detailList);
 	}
 	
 	public RoutingTableDetails getByDeviceByIndex(Device device, int index) {
-		System.out.println(routingMap.size());
-		return routingMap
-				.get(device)
+		return new ArrayList<RoutingTableDetails>(routingMap
+				.get(device))
 				.get(index);
+	}
+	
+	public RoutingTable clone() {
+		RoutingTable r = new RoutingTable();
+		this.routingMap.entrySet().forEach(entry -> {
+			r.routingMap.put(entry.getKey(), entry.getValue());
+		});
+		r.size = this.size;
+		return r;
 	}
 	
 	public int size() {

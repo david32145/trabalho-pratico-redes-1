@@ -21,11 +21,12 @@ public class AlgorithmDijkstra {
 	private List<Link> links;
 	private int[] parentDevice;
 	private double[] distance;
+	private int[] nextHops;
 	private boolean[] deviceClosed;
 	
 	private List<RoutingTable> routingTables;
-	private RoutingTable routingTableTmp;
 	private Device device;
+	private int interaction;
 	
 	public AlgorithmDijkstra(int[] vertex, double[][] edge) {
 		this.vertex = vertex;
@@ -50,29 +51,37 @@ public class AlgorithmDijkstra {
 	public List<RoutingTable> makeRoutes() {
 		for(int i = 0; i < devices.size(); i++) {
 			Device device = devices.get(i);
-			this.routingTableTmp = getOrCreate(i);
 			this.init(device);
 			this.run(device);
 		}
 		return this.routingTables;
 	}
 	
-	private RoutingTable getOrCreate(int index) {
+	private RoutingTable getCurrentRoutingTable(int index) {
 		if(index > this.routingTables.size() - 1) {
-			this.routingTables.add(new RoutingTable());
+			if(this.interaction == 0) {
+				this.routingTables.add(new RoutingTable());
+			} else {
+				int lastInteraction = this.interaction - 1;
+				RoutingTable lastRoutingTable = this.routingTables.get(lastInteraction);
+				this.routingTables.add(lastRoutingTable.clone());
+			}
 		}
 		return this.routingTables.get(index);
 	}
 	
 	private void init(Device device) {
 		this.device = device;
+		this.interaction = 0;
 		this.parentDevice = new int[devices.size()];
 		this.distance = new double[devices.size()];
+		this.nextHops = new int[devices.size()];
 		this.deviceClosed = new boolean[devices.size()];
 		for(int i = 0; i < devices.size(); i++) {
 			this.distance[i] = Double.MAX_VALUE;
 			this.deviceClosed[i] = false;
 			this.parentDevice[i] = -1;
+			this.nextHops[i] = -1;
 		}
 	}
 	
@@ -88,17 +97,20 @@ public class AlgorithmDijkstra {
 			return;
 		}
 		this.deviceClosed[index] = true;
-		List<Link> adjacentsLinks = this.getAdjacentsLinks(this.device);
-		
+		Device currentDevice = this.devices.get(index);
+		List<Link> adjacentsLinks = this.getAdjacentsLinks(currentDevice);
+		RoutingTable routingTable = this.getCurrentRoutingTable(this.interaction);
 		for(Link link : adjacentsLinks) {
-			Device adjacentDevice = link.getTarget();
+			Device adjacentDevice = link.getOther(currentDevice);
 			int adjacentDeviceIndex = this.devices.indexOf(adjacentDevice);
 			if(distance[adjacentDeviceIndex] > this.distance[index] + link.getWeight()) {
 				distance[adjacentDeviceIndex] = this.distance[index] + link.getWeight();
 				this.parentDevice[adjacentDeviceIndex] = index;
 			}
-			this.routingTableTmp.put(device, new RoutingTableDetails(adjacentDevice, link));
+			Link l = new Link(adjacentDevice, currentDevice, distance[adjacentDeviceIndex]);
+			routingTable.put(adjacentDevice, new RoutingTableDetails(device, l));
 		}
+		this.interaction++;
 		process(null);
 	}
 	
@@ -138,7 +150,16 @@ public class AlgorithmDijkstra {
 	
 	private List<Link> getAdjacentsLinks(Device device) {
 		return this.links.stream()
-				.filter(link -> link.getTarget().equals(device))
+				.filter(link -> {
+					if(!link.containDevice(device)) {
+						return false;
+					}
+					int indexOfOther = this.devices.indexOf(link.getOther(device));
+					if(this.deviceClosed[indexOfOther]) {
+						return false;
+					}
+					return true;
+				 })
 				.collect(Collectors.toList());
 	}
 	

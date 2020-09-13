@@ -18,7 +18,12 @@ public class RoutingTableDetails {
 	}
 	
 	@Override
+	public boolean equals(Object obj) {
+		return target.equals(((RoutingTableDetails)obj).target);
+	}
+	
+	@Override
 	public String toString() {
-		return String.format("%s,(%s,%s),%f", target, link.getSource(), link.getTarget(), link.getWeight());
+		return String.format("%s,(%s,%s),%.2f", target, link.getSource(), link.getTarget(), link.getWeight());
 	}
 }

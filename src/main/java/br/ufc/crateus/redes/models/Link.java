@@ -12,14 +12,30 @@ public class Link {
 	}
 	
 	public Device getSource() {
-		return source;
+		return source;	
 	}
 	
 	public Device getTarget() {
 		return target;
 	}
 	
+	public Device getOther(Device device) {
+		if(device.equals(source)) {
+			return target;
+		}
+		return source;
+	}
+	
 	public double getWeight() {
 		return weight;
+	}
+	
+	public boolean containDevice(Device device) {
+		return source.equals(device) || target.equals(device);
+	}
+	
+	@Override
+	public String toString() {
+		return  String.format("(%s, %s, %.1f)", source, target, weight);
 	}
 }

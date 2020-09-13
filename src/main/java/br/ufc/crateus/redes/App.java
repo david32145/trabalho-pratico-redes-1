@@ -4,12 +4,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import br.ufc.crateus.redes.dijkstra.AlgorithmDijkstra;
+import br.ufc.crateus.redes.dijkstra.NetworkRouter;
 import br.ufc.crateus.redes.models.Device;
 import br.ufc.crateus.redes.models.Link;
+import br.ufc.crateus.redes.models.Redirect;
 import br.ufc.crateus.redes.models.RoutingTableDetails;
 import br.ufc.crateus.redes.reader.NetworkFileReader;
 
@@ -25,7 +30,18 @@ public class App {
 //        System.out.println();
 
 		List<Link> links = networkFileReader.getLinks();
-
+		
+		NetworkRouter networkRouter = new NetworkRouter(devices.toArray(new Device[devices.size()]), links.toArray(new Link[links.size()]));
+		networkRouter.buildRoutes();
+		
+		devices.forEach(d -> System.out.printf("%s:\t|", d));
+		System.out.println();
+		List<Redirect> redirects = networkRouter.getRedirects();
+		redirects.forEach(System.out::println);
+		for (int i = 0; i < devices.size(); i++) {
+//			redirects.f
+			
+		}
 //        System.out.println();
 
 //        networkFileReader.getRoutes()
@@ -33,29 +49,29 @@ public class App {
 
 //        System.out.println();
 
-		AtomicInteger i = new AtomicInteger(0);
-		AlgorithmDijkstra algorithmDijkstra = new AlgorithmDijkstra(devices, links);
-		algorithmDijkstra.makeRoutes().forEach(routingTable -> {
-			System.out.println("Int. " + i.getAndIncrement());
-			devices.forEach(d -> System.out.printf("|%s:\t", d));
-			System.out.println();
-			for(int j = 0; j < routingTable.size(); j++) {
-				for(int k = 0; k < devices.size(); k++) {
-					RoutingTableDetails detail = routingTable.getByDeviceByIndex(devices.get(k), j);
-					System.out.printf("|%s\t", detail);
-				}
-				System.out.println();
-			}
-			System.out.println();
-//			devices.forEach(device -> {
-//				System.out.printf(device.getLabel() + " ");
-//				routingTable.getByDevice(device)
-//					.forEach(routeDetais -> {
-//						System.out.println(routeDetais);
-//					});
-//			});
-		});
-		;
+//		AtomicInteger i = new AtomicInteger(0);
+//		AlgorithmDijkstra algorithmDijkstra = new AlgorithmDijkstra(devices, links);
+//		algorithmDijkstra.makeRoutes().forEach(routingTable -> {
+//			System.out.println("Int. " + i.getAndIncrement());
+//			devices.forEach(d -> System.out.printf("|%s:\t\t", d));
+//			System.out.println();
+//			for(int j = 0; j < routingTable.size(); j++) {
+//				for(int k = 0; k < devices.size(); k++) {
+//					RoutingTableDetails detail = routingTable.getByDeviceByIndex(devices.get(k), j);
+//					System.out.printf("|%s\t", detail);
+//				}
+//				System.out.println();
+//			}
+//			System.out.println();
+////			devices.forEach(device -> {
+////				System.out.printf(device.getLabel() + " ");
+////				routingTable.getByDevice(device)
+////					.forEach(routeDetais -> {
+////						System.out.println(routeDetais);
+////					});
+////			});
+//		});
+//		;
 //        int vertex[] = {0, 1, 2, 3, 4};
 //        
 //        double edge[][] = new double[5][5];
